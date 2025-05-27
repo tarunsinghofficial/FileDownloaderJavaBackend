@@ -96,14 +96,15 @@ public class FileDownloaderServer {
                     return;
                 }
 
-                System.out.println("Starting download for URL: " + url);
-
-                // Get file information
+                System.out.println("Starting download for URL: " + url); // Get file information
                 URL fileUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) fileUrl.openConnection();
                 connection.setRequestMethod("HEAD");
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(10000);
+                // Add User-Agent to avoid 403 errors from some sites that block basic requests
+                connection.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -118,13 +119,17 @@ public class FileDownloaderServer {
                 exchange.getResponseHeaders().add("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
                 exchange.getResponseHeaders().add("Content-Type",
                         contentType != null ? contentType : "application/octet-stream");
-                exchange.getResponseHeaders().add("Content-Length", String.valueOf(fileSize));
-
-                // Stream the file directly to the client
+                exchange.getResponseHeaders().add("Content-Length", String.valueOf(fileSize)); // Stream the file
+                                                                                               // directly to the client
                 connection = (HttpURLConnection) fileUrl.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(30000);
+                // Add User-Agent and other headers to help prevent 403 errors
+                connection.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                connection.setRequestProperty("Accept", "*/*");
+                connection.setRequestProperty("Referer", url);
 
                 try (InputStream inputStream = connection.getInputStream();
                         OutputStream outputStream = exchange.getResponseBody()) {
@@ -137,11 +142,17 @@ public class FileDownloaderServer {
                         outputStream.write(buffer, 0, bytesRead);
                     }
                 }
-
             } catch (Exception e) {
                 System.err.println("Download error: " + e.getMessage());
                 e.printStackTrace();
-                sendErrorResponse(exchange, "Download failed: " + e.getMessage(), 500);
+
+                // Send appropriate status code based on the error
+                int statusCode = 500;
+                if (e instanceof IOException && e.getMessage().contains("403")) {
+                    statusCode = 403;
+                }
+
+                sendErrorResponse(exchange, "Download failed: " + e.getMessage(), statusCode);
             }
         }
 
