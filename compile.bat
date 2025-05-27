@@ -3,7 +3,7 @@ echo Compiling Java files...
 
 if not exist "bin" mkdir bin
 
-javac -d bin -cp "lib/*" src/*.java
+javac -source 17 -target 17 -d bin -cp "lib/*" src/*.java
 
 if %errorlevel% equ 0 (
     echo Compilation successful!
