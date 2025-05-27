@@ -12,12 +12,13 @@ public class FileDownloaderServer {
     private static String DOWNLOAD_DIR;
 
     public static void main(String[] args) throws Exception {
-        // Set download directory: use /app/downloads in Docker, user's Downloads folder locally
+        // Set download directory: use /app/downloads in Docker, user's Downloads folder
+        // locally
         if (new File("/app/downloads").exists()) {
             DOWNLOAD_DIR = "/app/downloads/";
         } else {
             DOWNLOAD_DIR = System.getProperty("user.home") + File.separator + "Downloads"
-                + File.separator + "file-downloader" + File.separator;
+                    + File.separator + "file-downloader" + File.separator;
         }
         // Create downloads directory if it doesn't exist
         File downloadDir = new File(DOWNLOAD_DIR);
