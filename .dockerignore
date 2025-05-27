@@ -1,0 +1,8 @@
+# Ignore these directories and files
+.git
+.github
+.vscode
+downloads
+*.bat
+*.md
+```
