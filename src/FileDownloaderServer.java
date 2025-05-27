@@ -9,7 +9,8 @@ import java.net.URL;
 
 public class FileDownloaderServer {
     private static final int PORT = 8080;
-    private static final String DOWNLOAD_DIR = "downloads/";
+    private static final String DOWNLOAD_DIR = System.getProperty("user.home") + File.separator + "Downloads"
+            + File.separator + "file-downloader" + File.separator;
 
     public static void main(String[] args) throws Exception {
         // Create downloads directory if it doesn't exist
